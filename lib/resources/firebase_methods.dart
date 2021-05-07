@@ -52,4 +52,10 @@ class FirebaseMethods {
     firestore.collection('users').doc(currentUser.uid).set(
         userModel.toMap(userModel));
   }
+  
+  Future<void> signOut() async {
+    await _googleSignIn.disconnect();
+    await _googleSignIn.signOut();
+    return await _auth.signOut();
+  }
 }

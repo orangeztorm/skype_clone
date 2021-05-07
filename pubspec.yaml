@@ -33,7 +33,7 @@ dependencies:
   firebase_auth: ^0.20.1
   google_sign_in: ^4.5.9
   firebase_core: ^0.7.0
-
+  shimmer:
 
 dev_dependencies:
   flutter_test:
