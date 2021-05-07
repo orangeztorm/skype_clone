@@ -37,7 +37,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
           IconButton(
             color: Colors.white,
             icon: Icon(Icons.search),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushNamed(context, '/search_screen');
+            },
           ),
           IconButton(
             color: Colors.white,
