@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:skype_clone/models/message.dart';
 import 'package:skype_clone/models/user.dart';
 import 'package:skype_clone/utils/utilities.dart';
 
@@ -22,7 +23,7 @@ class FirebaseMethods {
   Future<UserCredential> signIn() async {
     GoogleSignInAccount _signInAccount = await _googleSignIn.signIn();
     GoogleSignInAuthentication _signInuthentication =
-    await _signInAccount.authentication;
+        await _signInAccount.authentication;
     final AuthCredential credential = GoogleAuthProvider.credential(
       accessToken: _signInuthentication.accessToken,
       idToken: _signInuthentication.idToken,
@@ -32,8 +33,10 @@ class FirebaseMethods {
   }
 
   Future<bool> authenticateUser(User user) async {
-    QuerySnapshot result = await firestore.collection("users ").where(
-        "email", isEqualTo: user.email).get();
+    QuerySnapshot result = await firestore
+        .collection("users ")
+        .where("email", isEqualTo: user.email)
+        .get();
     final List<DocumentSnapshot> docs = result.docs;
     // if user document is 0 then he is registered
     return docs.length == 0 ? true : false;
@@ -47,11 +50,12 @@ class FirebaseMethods {
         email: currentUser.email,
         name: currentUser.displayName,
         profilePhoto: currentUser.photoURL,
-        username: userName
-    );
+        username: userName);
     print('passed');
-    firestore.collection('users').doc(currentUser.uid).set(
-        userModel.toMap(userModel));
+    firestore
+        .collection('users')
+        .doc(currentUser.uid)
+        .set(userModel.toMap(userModel));
   }
 
   Future<void> signOut() async {
@@ -59,18 +63,36 @@ class FirebaseMethods {
     await _googleSignIn.signOut();
     return await _auth.signOut();
   }
-  Future<List<UserModel>> fetchAllUsers(User currentUser)async{
+
+  Future<List<UserModel>> fetchAllUsers(User currentUser) async {
     List<UserModel> userList = List<UserModel>();
     QuerySnapshot querySnapshot = await firestore.collection('users').get();
-    try{
-      for (var i =0; 1<querySnapshot.docs.length; i++){
-        if(querySnapshot.docs[i].id != currentUser.uid){
+    try {
+      for (var i = 0; 1 < querySnapshot.docs.length; i++) {
+        if (querySnapshot.docs[i].id != currentUser.uid) {
           userList.add(UserModel.fromMap(querySnapshot.docs[i].data()));
-      }}
-    }catch(e){
+        }
+      }
+    } catch (e) {
       print('this is the error $e');
     }
 
     return userList;
+  }
+
+  Future<void> addMessageToDb(
+      Message message, UserModel sender, UserModel receiver) async {
+    var map = message.toMap();
+
+    await firestore
+        .collection('messages')
+        .doc(message.senderId)
+        .collection(message.receiverId)
+        .add(map);
+    await firestore
+        .collection('messages')
+        .doc(message.receiverId)
+        .collection(message.senderId)
+        .add(map);
   }
 }
