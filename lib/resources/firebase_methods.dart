@@ -66,9 +66,7 @@ class FirebaseMethods {
       for (var i =0; 1<querySnapshot.docs.length; i++){
         if(querySnapshot.docs[i].id != currentUser.uid){
           userList.add(UserModel.fromMap(querySnapshot.docs[i].data()));
-
-        }
-      }
+      }}
     }catch(e){
       print('this is the error $e');
     }
