@@ -1,12 +1,16 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:emoji_picker/emoji_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:skype_clone/constants/strings.dart';
 import 'package:skype_clone/models/message.dart';
 import 'package:skype_clone/models/user.dart';
 import 'package:skype_clone/resources/firebase_repository.dart';
 import 'package:skype_clone/utils/universal_variables.dart';
+import 'package:skype_clone/utils/utilities.dart';
 import 'package:skype_clone/widgets/customAppBar.dart';
 import 'package:skype_clone/widgets/custom_tile.dart';
 
@@ -56,6 +60,7 @@ class _ChatScreenState extends State<ChatScreen> {
       showEmojiPicker = true;
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,7 +79,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   emojiContainer() {
-    try{
+    try {
       return EmojiPicker(
         bgColor: UniversalVariables.separatorColor,
         indicatorColor: UniversalVariables.blueColor,
@@ -90,7 +95,7 @@ class _ChatScreenState extends State<ChatScreen> {
         recommendKeywords: ["face", "happy", "party", "sad"],
         numRecommended: 50,
       );
-    }catch(e){
+    } catch (e) {
       print('this is the error $e');
     }
   }
@@ -247,6 +252,11 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     }
 
+  pickImage({@required ImageSource source}) async {
+      File selectedImage = await Utils.pickImage(source);
+  }
+
+
     return Container(
       padding: EdgeInsets.all(10),
       child: Row(
@@ -271,7 +281,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 TextField(
                   focusNode: textFieldFocus,
                   controller: textFieldController,
-                  onTap: ()=> hideEmojiContainer(),
+                  onTap: () => hideEmojiContainer(),
                   style: TextStyle(
                     color: Colors.white,
                   ),
@@ -298,10 +308,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 IconButton(
                   splashColor: Colors.transparent,
                   onPressed: () {
-                    if(!showEmojiPicker){
+                    if (!showEmojiPicker) {
                       hideKeyboard();
                       showEmojiContainer();
-                    }else{
+                    } else {
                       showKeyboard();
                       hideEmojiContainer();
                     }
@@ -316,7 +326,11 @@ class _ChatScreenState extends State<ChatScreen> {
               : Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10),
                   child: Icon(Icons.record_voice_over)),
-          isWriting ? Container() : Icon(Icons.camera_alt),
+          isWriting
+              ? Container()
+              : GestureDetector(
+              onTap: () => pickImage(ImageSource.camera),
+              child: Icon(Icons.camera_alt)),
           isWriting
               ? Container(
                   margin: EdgeInsets.only(left: 10),
