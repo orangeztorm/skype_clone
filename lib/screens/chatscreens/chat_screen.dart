@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:emoji_picker/emoji_picker.dart';
+import 'package:skype_clone/constants/strings.dart';
 import 'package:skype_clone/models/message.dart';
 import 'package:skype_clone/models/user.dart';
 import 'package:skype_clone/resources/firebase_repository.dart';
@@ -17,11 +20,14 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  ScrollController _listScrollController = ScrollController();
   TextEditingController textFieldController = TextEditingController();
   FirebaseRepository _repository = FirebaseRepository();
   bool isWriting = false;
   UserModel sender;
   String _currentUserId;
+  bool showEmojiPicker = false;
+  FocusNode textFieldFocus = FocusNode();
 
   @override
   void initState() {
@@ -35,6 +41,21 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  showKeyboard() => textFieldFocus.requestFocus();
+
+  hideKeyboard() => textFieldFocus.unfocus();
+
+  hideEmojiContainer() {
+    setState(() {
+      showEmojiPicker = false;
+    });
+  }
+
+  showEmojiContainer() {
+    setState(() {
+      showEmojiPicker = true;
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,26 +67,57 @@ class _ChatScreenState extends State<ChatScreen> {
             child: messageList(),
           ),
           chatControls(),
+          showEmojiPicker ? Container(child: emojiContainer()) : Container(),
         ],
       ),
     );
   }
 
+  emojiContainer() {
+    try{
+      return EmojiPicker(
+        bgColor: UniversalVariables.separatorColor,
+        indicatorColor: UniversalVariables.blueColor,
+        rows: 3,
+        columns: 7,
+        onEmojiSelected: (emoji, category) {
+          setState(() {
+            isWriting = true;
+          });
+
+          textFieldController.text = textFieldController.text + emoji.emoji;
+        },
+        recommendKeywords: ["face", "happy", "party", "sad"],
+        numRecommended: 50,
+      );
+    }catch(e){
+      print('this is the error $e');
+    }
+  }
+
   Widget messageList() {
     return StreamBuilder(
       stream: FirebaseFirestore.instance
-          .collection('messages')
+          .collection(MESSAGES_COLLECTION)
           .doc(_currentUserId)
           .collection(widget.receiver.uid)
-          .orderBy("timestamp", descending: true)
+          .orderBy(TIMESTAMP_FIELD, descending: true)
           .snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.data == null) {
           return Center(child: CircularProgressIndicator());
         }
+
+        // SchedulerBinding.instance.addPostFrameCallback((_) {
+        //   _listScrollController.animateTo(
+        //       _listScrollController.position.minScrollExtent, duration: Duration(milliseconds: 250),
+        //       curve: Curves.easeInOut);
+        // });
         return ListView.builder(
             itemCount: snapshot.data.docs.length,
             padding: EdgeInsets.all(10),
+            reverse: true,
+            controller: _listScrollController,
             itemBuilder: (context, index) {
               return chatMessageItem(snapshot.data.docs[index]);
             });
@@ -74,20 +126,21 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget chatMessageItem(DocumentSnapshot snapshot) {
+    Message _message = Message.fromMap(snapshot.data());
     return Container(
       margin: EdgeInsets.symmetric(vertical: 15),
       child: Container(
-        alignment: snapshot['senderId'] == _currentUserId
+        alignment: _message.senderId == _currentUserId
             ? Alignment.centerRight
             : Alignment.centerLeft,
-        child: snapshot['senderId'] == _currentUserId
-            ? senderLayout(snapshot)
-            : receiverLayout(snapshot),
+        child: _message.senderId == _currentUserId
+            ? senderLayout(_message)
+            : receiverLayout(_message),
       ),
     );
   }
 
-  Widget senderLayout(DocumentSnapshot snapshot) {
+  Widget senderLayout(Message message) {
     Radius messageRadius = Radius.circular(10);
     return Container(
       margin: EdgeInsets.only(top: 12),
@@ -100,22 +153,18 @@ class _ChatScreenState extends State<ChatScreen> {
               topLeft: messageRadius,
               topRight: messageRadius,
               bottomLeft: messageRadius)),
-      child: Padding(
-        padding: EdgeInsets.all(10),
-        child: getMessage(snapshot)
-      ),
+      child: Padding(padding: EdgeInsets.all(10), child: getMessage(message)),
     );
   }
 
-  getMessage(DocumentSnapshot snapshot){
-    return Text(snapshot['message'],
-    style: TextStyle(
-      color: Colors.white,
-      fontSize: 16
-    ),);
+  getMessage(Message message) {
+    return Text(
+      message.message,
+      style: TextStyle(color: Colors.white, fontSize: 16),
+    );
   }
 
-  Widget receiverLayout(DocumentSnapshot snapshot) {
+  Widget receiverLayout(Message message) {
     Radius messageRadius = Radius.circular(10);
     return Container(
       constraints: BoxConstraints(
@@ -127,10 +176,7 @@ class _ChatScreenState extends State<ChatScreen> {
               bottomRight: messageRadius,
               topRight: messageRadius,
               bottomLeft: messageRadius)),
-      child: Padding(
-        padding: EdgeInsets.all(5),
-        child: getMessage(snapshot)
-      ),
+      child: Padding(padding: EdgeInsets.all(5), child: getMessage(message)),
     );
   }
 
@@ -219,33 +265,50 @@ class _ChatScreenState extends State<ChatScreen> {
             width: 5,
           ),
           Expanded(
-            child: TextField(
-              controller: textFieldController,
-              style: TextStyle(
-                color: Colors.white,
-              ),
-              onChanged: (val) {
-                (val.length > 0 && val.trim() != "")
-                    ? setWritingTo(true)
-                    : setWritingTo(false);
-              },
-              decoration: InputDecoration(
-                  hintText: "Type a message",
-                  hintStyle: TextStyle(
-                    color: UniversalVariables.greyColor,
+            child: Stack(
+              alignment: Alignment.centerRight,
+              children: [
+                TextField(
+                  focusNode: textFieldFocus,
+                  controller: textFieldController,
+                  onTap: ()=> hideEmojiContainer(),
+                  style: TextStyle(
+                    color: Colors.white,
                   ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(50)),
-                    borderSide: BorderSide.none,
+                  onChanged: (val) {
+                    (val.length > 0 && val.trim() != "")
+                        ? setWritingTo(true)
+                        : setWritingTo(false);
+                  },
+                  decoration: InputDecoration(
+                    hintText: "Type a message",
+                    hintStyle: TextStyle(
+                      color: UniversalVariables.greyColor,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(50)),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                    filled: true,
+                    fillColor: UniversalVariables.separatorColor,
                   ),
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                  filled: true,
-                  fillColor: UniversalVariables.separatorColor,
-                  suffixIcon: GestureDetector(
-                    onTap: () {},
-                    child: Icon(Icons.face),
-                  )),
+                ),
+                IconButton(
+                  splashColor: Colors.transparent,
+                  onPressed: () {
+                    if(!showEmojiPicker){
+                      hideKeyboard();
+                      showEmojiContainer();
+                    }else{
+                      showKeyboard();
+                      hideEmojiContainer();
+                    }
+                  },
+                  icon: Icon(Icons.face),
+                )
+              ],
             ),
           ),
           isWriting
@@ -279,7 +342,7 @@ class _ChatScreenState extends State<ChatScreen> {
         receiverId: widget.receiver.uid,
         senderId: sender.uid,
         message: text,
-        timestamp: FieldValue.serverTimestamp(),
+        timestamp: Timestamp.now(),
         type: 'text');
 
     setState(() {

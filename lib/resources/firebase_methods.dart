@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:skype_clone/constants/strings.dart';
 import 'package:skype_clone/models/message.dart';
 import 'package:skype_clone/models/user.dart';
 import 'package:skype_clone/utils/utilities.dart';
@@ -34,8 +35,8 @@ class FirebaseMethods {
 
   Future<bool> authenticateUser(User user) async {
     QuerySnapshot result = await firestore
-        .collection("users ")
-        .where("email", isEqualTo: user.email)
+        .collection(USERS_COLLECTION)
+        .where(EMAIL_FIELD, isEqualTo: user.email)
         .get();
     final List<DocumentSnapshot> docs = result.docs;
     // if user document is 0 then he is registered
@@ -51,9 +52,8 @@ class FirebaseMethods {
         name: currentUser.displayName,
         profilePhoto: currentUser.photoURL,
         username: userName);
-    print('passed');
     firestore
-        .collection('users')
+        .collection('USERS_COLLECTION')
         .doc(currentUser.uid)
         .set(userModel.toMap(userModel));
   }
@@ -66,9 +66,9 @@ class FirebaseMethods {
 
   Future<List<UserModel>> fetchAllUsers(User currentUser) async {
     List<UserModel> userList = List<UserModel>();
-    QuerySnapshot querySnapshot = await firestore.collection('users').get();
+    QuerySnapshot querySnapshot = await firestore.collection(USERS_COLLECTION).get();
     try {
-      for (var i = 0; 1 < querySnapshot.docs.length; i++) {
+      for (var i = 0; i < querySnapshot.docs.length; i++) {
         if (querySnapshot.docs[i].id != currentUser.uid) {
           userList.add(UserModel.fromMap(querySnapshot.docs[i].data()));
         }
@@ -85,12 +85,12 @@ class FirebaseMethods {
     var map = message.toMap();
 
     await firestore
-        .collection('messages')
+        .collection(MESSAGES_COLLECTION)
         .doc(message.senderId)
         .collection(message.receiverId)
         .add(map);
     await firestore
-        .collection('messages')
+        .collection(MESSAGES_COLLECTION)
         .doc(message.receiverId)
         .collection(message.senderId)
         .add(map);

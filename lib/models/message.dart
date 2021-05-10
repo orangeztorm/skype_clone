@@ -5,7 +5,7 @@ class Message {
   String receiverId;
   String type;
   String message;
-  FieldValue timestamp;
+  Timestamp timestamp;
   String photoUrl;
 
   Message({
