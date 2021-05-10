@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:skype_clone/constants/strings.dart';
@@ -12,6 +15,7 @@ class FirebaseMethods {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   GoogleSignIn _googleSignIn = GoogleSignIn();
   static final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  Reference _storageReference;
 
   UserModel userModel = UserModel();
 
@@ -95,4 +99,51 @@ class FirebaseMethods {
         .collection(message.senderId)
         .add(map);
   }
+
+  Future<String> uploadImageToStorage(File image)async{
+    dynamic url;
+   try{
+     _storageReference = FirebaseStorage.instance.ref().child('${DateTime.now().microsecondsSinceEpoch}');
+     UploadTask _storageUploadTask = _storageReference.putFile(image);
+     _storageUploadTask.then((res) {
+       url = res.ref.getDownloadURL();
+     });
+     return url.toString();
+   }catch(err){
+     print(err);
+     return null;
+   }
+  }
+
+  void setImageMsg(String url, String receiverId, String senderId)async{
+    Message _message;
+
+    _message = Message.imageMessage(
+      message: "IMAGE",
+      receiverId: receiverId,
+      senderId: senderId,
+      photoUrl: url,
+      timestamp: Timestamp.now(),
+      type: 'image'
+    );
+    var map = _message.toImageMap();
+    await firestore
+        .collection(MESSAGES_COLLECTION)
+        .doc(_message.senderId)
+        .collection(_message.receiverId)
+        .add(map);
+    await firestore
+        .collection(MESSAGES_COLLECTION)
+        .doc(_message.receiverId)
+        .collection(_message.senderId)
+        .add(map);
+
+  }
+
+  void uploadImage(File image, String receiverId, String senderId)async {
+    String url = await uploadImageToStorage(image);
+    setImageMsg(url,receiverId,senderId);
+  }
+
+
 }

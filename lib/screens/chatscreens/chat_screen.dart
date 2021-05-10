@@ -253,7 +253,12 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
   pickImage({@required ImageSource source}) async {
-      File selectedImage = await Utils.pickImage(source);
+      File selectedImage = await Utils.pickImage(source: source);
+      _repository.uploadImage(
+        image: selectedImage,
+        receiverId: widget.receiver.uid,
+        senderId: _currentUserId
+      );
   }
 
 
@@ -329,7 +334,7 @@ class _ChatScreenState extends State<ChatScreen> {
           isWriting
               ? Container()
               : GestureDetector(
-              onTap: () => pickImage(ImageSource.camera),
+              onTap: () => pickImage(source: ImageSource.camera),
               child: Icon(Icons.camera_alt)),
           isWriting
               ? Container(
