@@ -12,6 +12,7 @@ import 'package:skype_clone/models/user.dart';
 import 'package:skype_clone/provider/image_upload_provider.dart';
 import 'package:skype_clone/resources/firebase_repository.dart';
 import 'package:skype_clone/screens/chatscreens/widgets/cached_image.dart';
+import 'package:skype_clone/utils/call_utilities.dart';
 import 'package:skype_clone/utils/universal_variables.dart';
 import 'package:skype_clone/utils/utilities.dart';
 import 'package:skype_clone/widgets/customAppBar.dart';
@@ -175,10 +176,14 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   getMessage(Message message) {
-    return message.type != MESSAGE_TYPE_IMAGE ? Text(
-      message.message,
-      style: TextStyle(color: Colors.white, fontSize: 16),
-    ) : message.photoUrl != null ? CachedImage( url:message.photoUrl) : Text('url was null');
+    return message.type != MESSAGE_TYPE_IMAGE
+        ? Text(
+            message.message,
+            style: TextStyle(color: Colors.white, fontSize: 16),
+          )
+        : message.photoUrl != null
+            ? CachedImage(url: message.photoUrl)
+            : Text('url was null');
   }
 
   Widget receiverLayout(Message message) {
@@ -196,6 +201,7 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Padding(padding: EdgeInsets.all(5), child: getMessage(message)),
     );
   }
+
   pickImage({@required ImageSource source}) async {
     File selectedImage = await Utils.pickImage(source: source);
     print(selectedImage);
@@ -274,7 +280,6 @@ class _ChatScreenState extends State<ChatScreen> {
         },
       );
     }
-
 
     return Container(
       padding: EdgeInsets.all(10),
@@ -397,7 +402,8 @@ class _ChatScreenState extends State<ChatScreen> {
         actions: [
           IconButton(
             icon: Icon(Icons.video_call),
-            onPressed: () {},
+            onPressed: () => CallUtils.dial(
+                from: sender, to: widget.receiver, context: context),
           ),
           IconButton(
             icon: Icon(Icons.phone),
@@ -417,7 +423,8 @@ class ModalTile extends StatelessWidget {
       {Key key,
       @required this.title,
       @required this.subtitle,
-      @required this.icon, this.onTap})
+      @required this.icon,
+      this.onTap})
       : super(key: key);
 
   @override

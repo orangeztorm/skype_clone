@@ -6,15 +6,18 @@ class CallMethods {
   final CollectionReference callCollection = FirebaseFirestore.instance
       .collection(CALL_COLLECTION);
 
-  Future<bool> makeCall({Call call}) async{
-    try{
-      Map<String, dynamic> hasDialedMap = call.toMap(call);
+  Future<bool> makeCall({Call call}) async {
+    try {
+      call.hasDialled = true;
+      Map<String, dynamic> hasDialledMap = call.toMap(call);
+
       call.hasDialled = false;
-      Map<String, dynamic> hasNotDialedMap = call.toMap(call);
-      await callCollection.doc(call.callerId).set(hasDialedMap);
-      await callCollection.doc(call.receiverId).set(hasNotDialedMap);
+      Map<String, dynamic> hasNotDialledMap = call.toMap(call);
+
+      await callCollection.doc(call.callerId).set(hasDialledMap);
+      await callCollection.doc(call.receiverId).set(hasNotDialledMap);
       return true;
-    }catch(e){
+    } catch (e) {
       print(e);
       return false;
     }
@@ -30,5 +33,4 @@ class CallMethods {
       return false;
     }
   }
-
 }

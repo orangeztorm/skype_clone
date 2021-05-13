@@ -2,11 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:skype_clone/models/call.dart';
 import 'package:skype_clone/resources/call_methods.dart';
 
-class PickUpScreen extends StatelessWidget {
+import '../call_screen.dart';
+
+class PickUpScreen extends StatefulWidget {
   final Call call;
-  final callMethods = CallMethods();
 
   const PickUpScreen({Key key, this.call}) : super(key: key);
+
+  @override
+  _PickUpScreenState createState() => _PickUpScreenState();
+}
+
+class _PickUpScreenState extends State<PickUpScreen> {
+  final CallMethods callMethods = CallMethods();
 
   @override
   Widget build(BuildContext context) {
@@ -25,13 +33,13 @@ class PickUpScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 50),
                   Image.network(
-                    call.callerPic,
+                    widget.call.callerPic,
                     height: 150,
                     width: 150,
                   ),
                   SizedBox(height: 15),
                   Text(
-                    call.callerName,
+                    widget.call.callerName,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 20,
@@ -47,7 +55,7 @@ class PickUpScreen extends StatelessWidget {
                         onPressed: () async {
                           // isCallMissed = false;
                           // addToLocalStorage(callStatus: CALL_STATUS_RECEIVED);
-                          await callMethods.endCall(call: call);
+                          await callMethods.endCall(call: widget.call);
                         },
                       ),
                       SizedBox(width: 25),
