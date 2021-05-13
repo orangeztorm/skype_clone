@@ -36,13 +36,15 @@ dependencies:
   shimmer:
   emoji_picker: ^0.1.0
   # image_picker
-  image_picker: ^0.6.3+1
+  image_picker: ^0.6.7+15
   # path provider
   path_provider: ^1.6.0
   # firebase storage
   firebase_storage: ^7.0.0
   # provider
   provider: ^4.0.3
+  # cached network image
+  cached_network_image: ^2.0.0
 
 
 dev_dependencies:

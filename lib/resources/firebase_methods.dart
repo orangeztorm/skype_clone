@@ -9,6 +9,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:skype_clone/constants/strings.dart';
 import 'package:skype_clone/models/message.dart';
 import 'package:skype_clone/models/user.dart';
+import 'package:skype_clone/provider/image_upload_provider.dart';
 import 'package:skype_clone/utils/utilities.dart';
 
 class FirebaseMethods {
@@ -70,7 +71,8 @@ class FirebaseMethods {
 
   Future<List<UserModel>> fetchAllUsers(User currentUser) async {
     List<UserModel> userList = List<UserModel>();
-    QuerySnapshot querySnapshot = await firestore.collection(USERS_COLLECTION).get();
+    QuerySnapshot querySnapshot =
+        await firestore.collection(USERS_COLLECTION).get();
     try {
       for (var i = 0; i < querySnapshot.docs.length; i++) {
         if (querySnapshot.docs[i].id != currentUser.uid) {
@@ -100,32 +102,51 @@ class FirebaseMethods {
         .add(map);
   }
 
-  Future<String> uploadImageToStorage(File image)async{
-    dynamic url;
-   try{
-     _storageReference = FirebaseStorage.instance.ref().child('${DateTime.now().microsecondsSinceEpoch}');
-     UploadTask _storageUploadTask = _storageReference.putFile(image);
-     _storageUploadTask.then((res) {
-       url = res.ref.getDownloadURL();
-     });
-     return url.toString();
-   }catch(err){
-     print(err);
-     return null;
-   }
+  // Future<String> uploadImageToStorage(File image) async {
+  //   dynamic url;
+  //   try {
+  //     _storageReference = FirebaseStorage.instance
+  //         .ref()
+  //         .child('${DateTime.now().microsecondsSinceEpoch}');
+  //     UploadTask _storageUploadTask = _storageReference.putFile(image);
+  //     _storageUploadTask.then((res) {
+  //       url = res.ref.getDownloadURL();
+  //       print(url);
+  //     });
+  //     return url.toString();
+  //   } catch (err) {
+  //     print(err);
+  //     return null;
+  //   }
+  // }
+
+
+  Future<String> uploadImageToStorage(File imageFile) async {
+
+    try {
+      _storageReference = FirebaseStorage.instance
+          .ref()
+          .child('${DateTime.now().millisecondsSinceEpoch}');
+      UploadTask storageUploadTask =
+      _storageReference.putFile(imageFile);
+      var url = await (await storageUploadTask).ref.getDownloadURL();
+      // print(url);
+      return url.toString();
+    } catch (e) {
+      return null;
+    }
   }
 
-  void setImageMsg(String url, String receiverId, String senderId)async{
+  void setImageMsg(String url, String receiverId, String senderId) async {
     Message _message;
 
     _message = Message.imageMessage(
-      message: "IMAGE",
-      receiverId: receiverId,
-      senderId: senderId,
-      photoUrl: url,
-      timestamp: Timestamp.now(),
-      type: 'image'
-    );
+        message: "IMAGE",
+        receiverId: receiverId,
+        senderId: senderId,
+        photoUrl: url,
+        timestamp: Timestamp.now(),
+        type: 'image');
     var map = _message.toImageMap();
     await firestore
         .collection(MESSAGES_COLLECTION)
@@ -137,13 +158,13 @@ class FirebaseMethods {
         .doc(_message.receiverId)
         .collection(_message.senderId)
         .add(map);
-
   }
 
-  void uploadImage(File image, String receiverId, String senderId)async {
+  void uploadImage(File image, String receiverId, String senderId,
+      ImageUploadProvider imageUploadProvider) async {
+    imageUploadProvider.setToLoading();
     String url = await uploadImageToStorage(image);
-    setImageMsg(url,receiverId,senderId);
+    imageUploadProvider.setToIdle();
+    setImageMsg(url, receiverId, senderId);
   }
-
-
 }

@@ -29,8 +29,7 @@ class Utils{
     // Im.Image image = Im.decodeImage(imageToCompress.readAsBytesSync());
     // Im.copyResize(image, width: 500, height: 500);
     //
-    // return new File('$path/img_$rand.jpg')
-    //   ..writeAsBytesSync(Im.encodeJpg(image, quality: 85));
+    return imageToCompress;
   }
 
 }
