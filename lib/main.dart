@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:skype_clone/provider/image_upload_provider.dart';
+import 'package:skype_clone/provider/user_provider.dart';
 import 'package:skype_clone/resources/firebase_repository.dart';
 import 'package:skype_clone/screens/home_screen.dart';
 import 'package:skype_clone/screens/login_screen.dart';
@@ -25,8 +26,11 @@ class _MyAppState extends State<MyApp> {
   FirebaseRepository _repository = FirebaseRepository();
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<ImageUploadProvider>(
-      create: (context) => ImageUploadProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ImageUploadProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+      ],
       child: MaterialApp(
         title: 'Skype Clone',
         debugShowCheckedModeBanner: false,

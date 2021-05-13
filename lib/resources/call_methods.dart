@@ -3,8 +3,11 @@ import 'package:skype_clone/constants/strings.dart';
 import 'package:skype_clone/models/call.dart';
 
 class CallMethods {
-  final CollectionReference callCollection = FirebaseFirestore.instance
-      .collection(CALL_COLLECTION);
+  final CollectionReference callCollection =
+      FirebaseFirestore.instance.collection(CALL_COLLECTION);
+
+  Stream<DocumentSnapshot> callStream({String uid}) =>
+      callCollection.doc(uid).snapshots();
 
   Future<bool> makeCall({Call call}) async {
     try {
