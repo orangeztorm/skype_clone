@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:skype_clone/models/user.dart';
+import 'package:skype_clone/resources/auth_methos.dart';
 import 'package:skype_clone/resources/firebase_repository.dart';
 import 'package:skype_clone/utils/universal_variables.dart';
 import 'package:skype_clone/widgets/custom_tile.dart';
@@ -16,7 +17,8 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  FirebaseRepository _repository = FirebaseRepository();
+  final AuthMethods _authMethods = AuthMethods();
+
   List<UserModel> userList;
   String query = '';
   TextEditingController searchController = TextEditingController();
@@ -24,8 +26,8 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     super.initState();
-    _repository.getCurrentUser().then((user) {
-      _repository.fetchAllUsers(user).then((list) {
+    _authMethods.getCurrentUser().then((user) {
+      _authMethods.fetchAllUsers(user).then((list) {
         setState(() {
           userList = list;
           print(list.length);

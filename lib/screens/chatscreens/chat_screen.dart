@@ -10,7 +10,10 @@ import 'package:skype_clone/enum/view_state.dart';
 import 'package:skype_clone/models/message.dart';
 import 'package:skype_clone/models/user.dart';
 import 'package:skype_clone/provider/image_upload_provider.dart';
+import 'package:skype_clone/resources/auth_methos.dart';
+import 'package:skype_clone/resources/chat_methods.dart';
 import 'package:skype_clone/resources/firebase_repository.dart';
+import 'package:skype_clone/resources/storage_methods.dart';
 import 'package:skype_clone/screens/chatscreens/widgets/cached_image.dart';
 import 'package:skype_clone/utils/call_utilities.dart';
 import 'package:skype_clone/utils/permissions.dart';
@@ -29,10 +32,14 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+
+  final StorageMethods _storageMethods = StorageMethods();
+  final ChatMethods _chatMethods = ChatMethods();
+  final AuthMethods _authMethods = AuthMethods();
+
   ImageUploadProvider _imageUploadProvider;
   ScrollController _listScrollController = ScrollController();
   TextEditingController textFieldController = TextEditingController();
-  FirebaseRepository _repository = FirebaseRepository();
   bool isWriting = false;
   UserModel sender;
   String _currentUserId;
@@ -42,7 +49,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    _repository.getCurrentUser().then((user) {
+    _authMethods.getCurrentUser().then((user) {
       _currentUserId = user.uid;
       setState(() {
         sender = UserModel(
@@ -206,7 +213,7 @@ class _ChatScreenState extends State<ChatScreen> {
   pickImage({@required ImageSource source}) async {
     File selectedImage = await Utils.pickImage(source: source);
     print(selectedImage);
-    _repository.uploadImage(
+    _storageMethods.uploadImage(
       image: selectedImage,
       receiverId: widget.receiver.uid,
       senderId: _currentUserId,
@@ -387,7 +394,7 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {
       isWriting = false;
     });
-    _repository.addMessageToDb(_message, sender, widget.receiver);
+    _chatMethods.addMessageToDb(_message, sender, widget.receiver);
     textFieldController.clear();
   }
 
