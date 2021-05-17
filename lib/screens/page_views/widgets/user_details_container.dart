@@ -8,8 +8,10 @@ import 'package:skype_clone/screens/chatscreens/widgets/cached_image.dart';
 import 'package:skype_clone/screens/page_views/widgets/shimmwering_logo.dart';
 import 'package:skype_clone/widgets/customAppBar.dart';
 
+import '../../login_screen.dart';
+
 class UserDetailsContainer extends StatelessWidget {
-  const UserDetailsContainer({Key key}) : super(key: key);
+  UserDetailsContainer({Key key}) : super(key: key);
   final AuthMethods authMethods = AuthMethods();
 
 
