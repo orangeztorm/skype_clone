@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:skype_clone/constants/strings.dart';
@@ -52,7 +50,7 @@ class ChatMethods {
   Future<void> addToReceiversContact(
       String senderId, String receiverId, currentTime) async {
     DocumentSnapshot receiverSnapshot =
-    await getContactsDocument(of: receiverId, forContact: senderId).get();
+        await getContactsDocument(of: receiverId, forContact: senderId).get();
 
     if (!receiverSnapshot.exists) {
       Contact senderContact = Contact(uid: senderId, addedOn: currentTime);
@@ -89,4 +87,15 @@ class ChatMethods {
         .collection(_message.senderId)
         .add(map);
   }
+
+  Stream<QuerySnapshot> fetchContacts({String userId}) =>
+      _usersCollection.doc(userId).collection(CONTACTS_COLLECTION).snapshots();
+
+  Stream<QuerySnapshot> fetchLastMessagesBetween(
+          {String senderId, String receiverId}) =>
+      _messageCollection
+          .doc(senderId)
+          .collection(receiverId)
+          .orderBy('timestamp')
+          .snapshots();
 }

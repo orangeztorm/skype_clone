@@ -19,11 +19,25 @@ class AuthMethods {
     return currentUser;
   }
 
+
+
   Future<UserModel> getUserDetails() async {
     User currentUser = await getCurrentUser();
     DocumentSnapshot documentSnapshot =
         await _userCollection.doc(currentUser.uid).get();
     return UserModel.fromMap(documentSnapshot.data());
+  }
+
+  Future<UserModel> getUserDetailsId(id) async {
+    try{
+      DocumentSnapshot documentSnapshot =
+      await _userCollection.doc(id).get();
+      return UserModel.fromMap(documentSnapshot.data());
+    }catch(e){
+      print(e);
+      return null;
+    }
+
   }
 
   Future<UserCredential> signIn() async {
