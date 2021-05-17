@@ -3,11 +3,11 @@ import 'package:skype_clone/constants/strings.dart';
 import 'package:skype_clone/models/call.dart';
 
 class CallMethods {
-  final CollectionReference callCollection =
-      FirebaseFirestore.instance.collection(CALL_COLLECTION);
-
   Stream<DocumentSnapshot> callStream({String uid}) =>
-      callCollection.doc(uid).snapshots();
+      FirebaseFirestore.instance
+          .collection(CALL_COLLECTION)
+          .doc(uid)
+          .snapshots();
 
   Future<bool> makeCall({Call call}) async {
     try {
@@ -17,8 +17,14 @@ class CallMethods {
       call.hasDialled = false;
       Map<String, dynamic> hasNotDialledMap = call.toMap(call);
 
-      await callCollection.doc(call.callerId).set(hasDialledMap);
-      await callCollection.doc(call.receiverId).set(hasNotDialledMap);
+      await FirebaseFirestore.instance
+          .collection(CALL_COLLECTION)
+          .doc(call.callerId)
+          .set(hasDialledMap);
+      await FirebaseFirestore.instance
+          .collection(CALL_COLLECTION)
+          .doc(call.receiverId)
+          .set(hasNotDialledMap);
       return true;
     } catch (e) {
       print(e);
@@ -28,8 +34,14 @@ class CallMethods {
 
   Future<bool> endCall({Call call}) async {
     try {
-      await callCollection.doc(call.callerId).delete();
-      await callCollection.doc(call.receiverId).delete();
+      await FirebaseFirestore.instance
+          .collection(CALL_COLLECTION)
+          .doc(call.callerId)
+          .delete();
+      await FirebaseFirestore.instance
+          .collection(CALL_COLLECTION)
+          .doc(call.receiverId)
+          .delete();
       return true;
     } catch (e) {
       print(e);

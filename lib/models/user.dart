@@ -17,15 +17,15 @@ class UserModel {
     this.profilePhoto,
   });
 
-  Map toMap(UserModel user) {
+  Map toMap(UserModel userModel) {
     var data = Map<String, dynamic>();
-    data['uid'] = user.uid;
-    data['name'] = user.name;
-    data['email'] = user.email;
-    data['username'] = user.username;
-    data["status"] = user.status;
-    data["state"] = user.state;
-    data["profile_photo"] = user.profilePhoto;
+    data['uid'] = userModel.uid;
+    data['name'] = userModel.name;
+    data['email'] = userModel.email;
+    data['username'] = userModel.username;
+    data["status"] = userModel.status;
+    data["state"] = userModel.state;
+    data["profile_photo"] = userModel.profilePhoto;
     return data;
   }
 
