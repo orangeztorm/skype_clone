@@ -5,10 +5,11 @@ import 'package:skype_clone/models/user.dart';
 import 'package:skype_clone/provider/user_provider.dart';
 import 'package:skype_clone/resources/auth_methos.dart';
 import 'package:skype_clone/screens/chatscreens/widgets/cached_image.dart';
-import 'package:skype_clone/screens/page_views/widgets/shimmwering_logo.dart';
+import 'package:skype_clone/screens/page_views/chats/widgets/shimmwering_logo.dart';
 import 'package:skype_clone/widgets/customAppBar.dart';
 
-import '../../login_screen.dart';
+import '../../../login_screen.dart';
+
 
 class UserDetailsContainer extends StatelessWidget {
   UserDetailsContainer({Key key}) : super(key: key);

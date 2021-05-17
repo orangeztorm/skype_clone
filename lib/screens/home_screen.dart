@@ -5,8 +5,10 @@ import 'package:provider/provider.dart';
 import 'package:skype_clone/enum/user_state.dart';
 import 'package:skype_clone/provider/user_provider.dart';
 import 'package:skype_clone/resources/auth_methos.dart';
+import 'package:skype_clone/resources/local_db/repository/log_repository.dart';
 import 'package:skype_clone/screens/call_screens/pick_up/pickup_layout.dart';
-import 'package:skype_clone/screens/page_views/chat_list_screen.dart';
+import 'package:skype_clone/screens/page_views/chats/chat_list_screen.dart';
+import 'package:skype_clone/screens/page_views/logs/log_screen.dart';
 import 'package:skype_clone/utils/universal_variables.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -36,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
         userId: userProvider.getUser.uid,
         userState: UserState.Online,
       );
+      LogRepository.init(isHive: false, dbName: userProvider.getUser.uid);
     });
 
     WidgetsBinding.instance.addObserver(this);
@@ -104,9 +107,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
         body: PageView(
           physics: NeverScrollableScrollPhysics(),
           children: [
-            Container(child: ChatListScreen()),
-            Center(child: Text("call Logs")),
-            Center(child: Text("Contact Screen"))
+            ChatListScreen(),
+            LogScreen(),
+            Center(
+                child: Text(
+                  "Contact Screen",
+                  style: TextStyle(color: Colors.white),
+                )),
           ],
           controller: pageController,
           onPageChanged: onPageChanged,
