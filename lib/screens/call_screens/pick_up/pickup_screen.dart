@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:skype_clone/models/call.dart';
 import 'package:skype_clone/resources/call_methods.dart';
+import 'package:skype_clone/screens/chatscreens/widgets/cached_image.dart';
 
 import '../call_screen.dart';
 
@@ -32,10 +33,10 @@ class _PickUpScreenState extends State<PickUpScreen> {
                     ),
                   ),
                   SizedBox(height: 50),
-                  Image.network(
+                  CachedImage(
                     widget.call.callerPic,
-                    height: 150,
-                    width: 150,
+                    isRound: true,
+                    radius: 180,
                   ),
                   SizedBox(height: 15),
                   Text(
