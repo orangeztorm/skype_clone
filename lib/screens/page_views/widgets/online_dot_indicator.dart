@@ -33,10 +33,10 @@ class OnlineDotIndicator extends StatelessWidget {
           uid: uid,
         ),
         builder: (context, snapshot) {
-          UserModel user;
+          UserModel userModel;
 
-          if (snapshot.hasData && snapshot.data.data != null) {
-            user = UserModel.fromMap(snapshot.data.data());
+          if (snapshot.hasData && snapshot.data.data() != null) {
+            userModel = UserModel.fromMap(snapshot.data.data());
           }
 
           return Container(
@@ -45,7 +45,7 @@ class OnlineDotIndicator extends StatelessWidget {
             margin: EdgeInsets.only(right: 5, top: 5),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: getColor(user?.state),
+              color: getColor(userModel?.state),
             ),
           );
         },
