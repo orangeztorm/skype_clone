@@ -21,10 +21,13 @@ class SqliteMethods implements LogInterface {
   String callStatus = 'call_status';
   String timestamp = 'timestamp';
 
-  Future<Database> get db async{
-    if(db!= null){
-      return db;
+  Future<Database> get db async {
+    if (_db != null) {
+      return _db;
     }
+    print('db is null, now awaiting it');
+    _db = await init();
+    return _db;
   }
 
   @override
@@ -43,26 +46,64 @@ class SqliteMethods implements LogInterface {
   }
 
   @override
-  addLogs(Log log) {
-    print("Adding values to Sqlite Db");
-    return null;
+  addLogs(Log log) async {
+    var dbClient = await db;
+
+    await dbClient.insert(tableName, log.toMap(log));
+  }
+
+  updateLogs(Log log) async {
+    var dbClient = await db;
+
+    await dbClient.update(
+      tableName,
+      log.toMap(log),
+      where: '$id = ?',
+      whereArgs: [log.logId],
+    );
+  }
+
+
+  @override
+  deleteLogs(int logId) async {
+    var dbClient = await db;
+    return await dbClient
+        .delete(tableName, where: '$id = ?', whereArgs: [logId]);
+  }
+
+
+  @override
+  Future<List<Log>> getLogs() async {
+    try {
+      var dbClient = await db;
+      // List<Map> maps = await dbClient.rawQuery("SELECT * FROM $tableName");
+      List<Map> maps = await dbClient.query(tableName, columns: [
+        id,
+        callerName,
+        callerPic,
+        receiverName,
+        receiverPic,
+        callStatus,
+        timestamp,
+      ]);
+      List<Log> logList = [];
+
+      if (maps.isNotEmpty) {
+        for (Map map in maps) {
+          logList.add(Log.fromMap(map));
+        }
+      }
+
+      return logList;
+    } catch (e) {
+      print(e);
+      return null;
+    }
   }
 
   @override
-  close() {
-    // TODO: implement close
-    return null;
-  }
-
-  @override
-  deleteLogs(int logId) {
-    // TODO: implement deleteLogs
-    return null;
-  }
-
-  @override
-  Future<List<Log>> getLogs() {
-    // TODO: implement getLogs
-    return null;
+  close() async {
+    var dbClient = await db;
+    dbClient.close();
   }
 }
