@@ -4,6 +4,18 @@ A new Flutter application.
 
 ## Getting Started
 
+##Folder structure
+There's four different folders. Each of them is a Dart project.
+
+resources: contains all the backends operation.
+ui: contains ui elements like different screen.
+utils: contains utilities irrelevant to the project
+models: contains differnt models. To work on these projects, open each one of them in an editor of your choice.
+Development environment setup
+Install Flutter.
+Install and setup VS Code.
+Building the project
+Go to project Directory and run flutter run.
 This project is a starting point for a Flutter application.
 
 A few resources to get you started if this is your first Flutter project:
