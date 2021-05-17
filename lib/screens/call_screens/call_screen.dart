@@ -52,7 +52,6 @@ class _CallScreenState extends State<CallScreen> {
     await AgoraRtcEngine.setParameters(
         '''{\"che.video.lowBitRateStreamParameter\":{\"width\":320,\"height\":180,\"frameRate\":15,\"bitRate\":140}}''');
     await AgoraRtcEngine.joinChannel(null, widget.call.channelId, null, 0);
-
   }
 
   /// Create agora sdk instance and initialize
@@ -60,6 +59,7 @@ class _CallScreenState extends State<CallScreen> {
     await AgoraRtcEngine.create(APP_ID);
     await AgoraRtcEngine.enableVideo();
   }
+
   /// Add agora event handlers
   void _addAgoraEventHandlers() {
     AgoraRtcEngine.onError = (dynamic code) {
@@ -70,10 +70,10 @@ class _CallScreenState extends State<CallScreen> {
     };
 
     AgoraRtcEngine.onJoinChannelSuccess = (
-        String channel,
-        int uid,
-        int elapsed,
-        ) {
+      String channel,
+      int uid,
+      int elapsed,
+    ) {
       setState(() {
         final info = 'onJoinChannel: $channel, uid: $uid';
         _infoStrings.add(info);
@@ -142,11 +142,11 @@ class _CallScreenState extends State<CallScreen> {
     };
 
     AgoraRtcEngine.onFirstRemoteVideoFrame = (
-        int uid,
-        int width,
-        int height,
-        int elapsed,
-        ) {
+      int uid,
+      int width,
+      int height,
+      int elapsed,
+    ) {
       setState(() {
         final info = 'firstRemoteVideo: $uid ${width}x $height';
         _infoStrings.add(info);
@@ -154,46 +154,218 @@ class _CallScreenState extends State<CallScreen> {
     };
   }
 
-
   addPostFrameCallback() {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       userProvider = Provider.of<UserProvider>(context, listen: false);
-      callStreamSubscription =
-          callMethods.callStream(uid: userProvider.getUser.uid).listen((
-              DocumentSnapshot ds) {
-            switch(ds.data()){
-              case null:
-                Navigator.pop(context);
-                break;
-              default:
-                break;
-            }
-          });
+      callStreamSubscription = callMethods
+          .callStream(uid: userProvider.getUser.uid)
+          .listen((DocumentSnapshot ds) {
+        switch (ds.data()) {
+          case null:
+            Navigator.pop(context);
+            break;
+          default:
+            break;
+        }
+      });
     });
+  }
+
+  /// Helper function to get list of native views
+  List<Widget> _getRenderViews() {
+    final List<AgoraRenderWidget> list = [
+      AgoraRenderWidget(0, local: true, preview: true),
+    ];
+    _users.forEach((int uid) => list.add(AgoraRenderWidget(uid)));
+    return list;
+  }
+
+  /// Video view wrapper
+  Widget _videoView(view) {
+    return Expanded(child: Container(child: view));
+  }
+
+  /// Video view row wrapper
+  Widget _expandedVideoRow(List<Widget> views) {
+    final wrappedViews = views.map<Widget>(_videoView).toList();
+    return Expanded(
+      child: Row(
+        children: wrappedViews,
+      ),
+    );
+  }
+
+  /// Info panel to show logs
+  Widget _panel() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 48),
+      alignment: Alignment.bottomCenter,
+      child: FractionallySizedBox(
+        heightFactor: 0.5,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 48),
+          child: ListView.builder(
+            reverse: true,
+            itemCount: _infoStrings.length,
+            itemBuilder: (BuildContext context, int index) {
+              if (_infoStrings.isEmpty) {
+                return null;
+              }
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 3,
+                  horizontal: 10,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 2,
+                          horizontal: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.yellowAccent,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Text(
+                          _infoStrings[index],
+                          style: TextStyle(color: Colors.blueGrey),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _onToggleMute() {
+    setState(() {
+      muted = !muted;
+    });
+    AgoraRtcEngine.muteLocalAudioStream(muted);
+  }
+
+  void _onSwitchCamera() {
+    AgoraRtcEngine.switchCamera();
+  }
+
+  // Toolbar layout
+  Widget _toolbar() {
+    return Container(
+      alignment: Alignment.bottomCenter,
+      padding: const EdgeInsets.symmetric(vertical: 48),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          RawMaterialButton(
+            onPressed: _onToggleMute,
+            child: Icon(
+              muted ? Icons.mic : Icons.mic_off,
+              color: muted ? Colors.white : Colors.blueAccent,
+              size: 20.0,
+            ),
+            shape: CircleBorder(),
+            elevation: 2.0,
+            fillColor: muted ? Colors.blueAccent : Colors.white,
+            padding: const EdgeInsets.all(12.0),
+          ),
+          RawMaterialButton(
+            onPressed: () => callMethods.endCall(
+              call: widget.call,
+            ),
+            child: Icon(
+              Icons.call_end,
+              color: Colors.white,
+              size: 35.0,
+            ),
+            shape: CircleBorder(),
+            elevation: 2.0,
+            fillColor: Colors.redAccent,
+            padding: const EdgeInsets.all(15.0),
+          ),
+          RawMaterialButton(
+            onPressed: _onSwitchCamera,
+            child: Icon(
+              Icons.switch_camera,
+              color: Colors.blueAccent,
+              size: 20.0,
+            ),
+            shape: CircleBorder(),
+            elevation: 2.0,
+            fillColor: Colors.white,
+            padding: const EdgeInsets.all(12.0),
+          )
+        ],
+      ),
+    );
+  }
+
+  /// Video layout wrapper
+  Widget _viewRows() {
+    final views = _getRenderViews();
+    switch (views.length) {
+      case 1:
+        return Container(
+            child: Column(
+          children: <Widget>[_videoView(views[0])],
+        ));
+      case 2:
+        return Container(
+            child: Column(
+          children: <Widget>[
+            _expandedVideoRow([views[0]]),
+            _expandedVideoRow([views[1]])
+          ],
+        ));
+      case 3:
+        return Container(
+            child: Column(
+          children: <Widget>[
+            _expandedVideoRow(views.sublist(0, 2)),
+            _expandedVideoRow(views.sublist(2, 3))
+          ],
+        ));
+      case 4:
+        return Container(
+            child: Column(
+          children: <Widget>[
+            _expandedVideoRow(views.sublist(0, 2)),
+            _expandedVideoRow(views.sublist(2, 4))
+          ],
+        ));
+      default:
+    }
+    return Container();
   }
 
   @override
   void dispose() {
     super.dispose();
+    // clear users
+    _users.clear();
+    // destroy sdk
+    AgoraRtcEngine.leaveChannel();
+    AgoraRtcEngine.destroy();
     callStreamSubscription.cancel();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        alignment: Alignment.center,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Call has been made'),
-            MaterialButton(
-                color: Colors.red,
-                child: Icon(Icons.call_end, color: Colors.white),
-                onPressed: () {
-                  callMethods.endCall(call: widget.call);
-                  Navigator.pop(context);
-                })
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Stack(
+          children: <Widget>[
+            _viewRows(),
+            // _panel(),
+            _toolbar(),
           ],
         ),
       ),
