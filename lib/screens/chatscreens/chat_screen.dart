@@ -12,7 +12,6 @@ import 'package:skype_clone/models/user.dart';
 import 'package:skype_clone/provider/image_upload_provider.dart';
 import 'package:skype_clone/resources/auth_methos.dart';
 import 'package:skype_clone/resources/chat_methods.dart';
-import 'package:skype_clone/resources/firebase_repository.dart';
 import 'package:skype_clone/resources/storage_methods.dart';
 import 'package:skype_clone/screens/chatscreens/widgets/cached_image.dart';
 import 'package:skype_clone/utils/call_utilities.dart';
