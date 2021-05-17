@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:skype_clone/models/call.dart';
 import 'package:skype_clone/resources/call_methods.dart';
 import 'package:skype_clone/screens/chatscreens/widgets/cached_image.dart';
+import 'package:skype_clone/utils/permissions.dart';
 
 import '../call_screen.dart';
 
@@ -66,16 +67,16 @@ class _PickUpScreenState extends State<PickUpScreen> {
                           onPressed: () async {
                             // isCallMissed = false;
                             // addToLocalStorage(callStatus: CALL_STATUS_RECEIVED);
-                            // await Permissions.cameraAndMicrophonePermissionsGranted()
-                            //     ?
+                            await Permissions.cameraAndMicrophonePermissionsGranted()
+                                ?
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>
                                     CallScreen(call: widget.call),
                               ),
-                            );
-                                // : {};
+                            )
+                                : {};
                           }),
                     ],
                   )
