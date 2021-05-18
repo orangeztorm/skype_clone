@@ -5,13 +5,14 @@ import 'package:skype_clone/resources/auth_methos.dart';
 class UserProvider with ChangeNotifier {
 
   AuthMethods _authMethods = AuthMethods();
-  UserModel _userModel;
+  UserModel _user;
 
-  UserModel get getUser => _userModel;
+  UserModel get getUser => _user;
 
   Future<void> refreshUser() async {
     UserModel user = await _authMethods.getUserDetails();
-    _userModel = user;
+    _user = user;
+    print('provider ${user.uid}');
     notifyListeners();
   }
 

@@ -42,35 +42,40 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void performLogin() {
+  void performLogin() async {
+
     setState(() {
       isLoginPressed = true;
     });
-    _authMethods.signIn().then((UserCredential user) => {
-          if (user != null)
-            {authenticateUser(user.user)}
-          else
-            {'there was an error'}
-        });
+
+    User user = await _authMethods.signIn();
+
+    if (user != null) {
+      authenticateUser(user);
+    }
+    setState(() {
+      isLoginPressed = false;
+    });
   }
 
   void authenticateUser(User user) {
-    _authMethods.authenticateUser(user).then((value) {
+    _authMethods.authenticateUser(user).then((isNewUser) {
       setState(() {
         isLoginPressed = false;
       });
-      if (value) {
+
+      if (isNewUser) {
         _authMethods.addDataToDb(user).then((value) {
           Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) {
-            return HomeScreen();
-          }));
+                return HomeScreen();
+              }));
         });
       } else {
         Navigator.pushReplacement(context,
             MaterialPageRoute(builder: (context) {
-          return HomeScreen();
-        }));
+              return HomeScreen();
+            }));
       }
     });
   }

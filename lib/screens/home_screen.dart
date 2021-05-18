@@ -33,6 +33,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver{
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       userProvider = Provider.of<UserProvider>(context, listen: false);
       await userProvider.refreshUser();
+      print('home screen ${userProvider.getUser.uid}');
 
       _authMethods.setUserState(
         userId: userProvider.getUser.uid,

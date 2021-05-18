@@ -8,31 +8,26 @@ import 'package:skype_clone/models/user.dart';
 class ChatMethods {
   static final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  final CollectionReference _messageCollection =
-      firestore.collection(MESSAGES_COLLECTION);
-
-  final CollectionReference _usersCollection =
-      firestore.collection(USERS_COLLECTION);
 
   Future<void> addMessageToDb(
       Message message, UserModel sender, UserModel receiver) async {
     var map = message.toMap();
 
-    await _messageCollection
+    await firestore.collection(MESSAGES_COLLECTION)
         .doc(message.senderId)
         .collection(message.receiverId)
         .add(map);
 
     addToContacts(senderId: message.senderId, receiverId: message.receiverId);
 
-    await _messageCollection
+    await firestore.collection(MESSAGES_COLLECTION)
         .doc(message.receiverId)
         .collection(message.senderId)
         .add(map);
   }
 
   DocumentReference getContactsDocument({String of, String forContact}) =>
-      _usersCollection.doc(of).collection(CONTACTS_COLLECTION).doc(forContact);
+      firestore.collection(USERS_COLLECTION).doc(of).collection(CONTACTS_COLLECTION).doc(forContact);
 
   Future<void> addToSendersContact(
       String senderId, String receiverId, currentTime) async {
@@ -78,22 +73,22 @@ class ChatMethods {
         timestamp: Timestamp.now(),
         type: 'image');
     var map = _message.toImageMap();
-    await _messageCollection
+    await firestore.collection(MESSAGES_COLLECTION)
         .doc(_message.senderId)
         .collection(_message.receiverId)
         .add(map);
-    await _messageCollection
+    await firestore.collection(MESSAGES_COLLECTION)
         .doc(_message.receiverId)
         .collection(_message.senderId)
         .add(map);
   }
 
   Stream<QuerySnapshot> fetchContacts({String userId}) =>
-      _usersCollection.doc(userId).collection(CONTACTS_COLLECTION).snapshots();
+      firestore.collection(USERS_COLLECTION).doc(userId).collection(CONTACTS_COLLECTION).snapshots();
 
   Stream<QuerySnapshot> fetchLastMessagesBetween(
           {String senderId, String receiverId}) =>
-      _messageCollection
+      firestore.collection(MESSAGES_COLLECTION)
           .doc(senderId)
           .collection(receiverId)
           .orderBy('timestamp')
