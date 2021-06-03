@@ -11,7 +11,6 @@ class AuthMethods {
   GoogleSignIn _googleSignIn = GoogleSignIn();
   static final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-
   Future<User> getCurrentUser() async {
     User currentUser;
     currentUser = _auth.currentUser;
@@ -21,24 +20,24 @@ class AuthMethods {
   Future<UserModel> getUserDetails() async {
     User currentUser = await getCurrentUser();
     print(currentUser.uid);
-    DocumentSnapshot documentSnapshot =
-        await firestore
-            .collection('USERS_COLLECTION').doc(currentUser.uid).get();
-    if(documentSnapshot.exists){
-      print (true);
-      UserModel user =  UserModel.fromMap(documentSnapshot.data());
+    DocumentSnapshot documentSnapshot = await firestore
+        .collection('USERS_COLLECTION')
+        .doc(currentUser.uid)
+        .get();
+    if (documentSnapshot.exists) {
+      print(true);
+      UserModel user = UserModel.fromMap(documentSnapshot.data());
       print('get  user details ${user.uid}');
       return user;
-    }else{
+    } else {
       print('no');
     }
-
   }
 
   Future<UserModel> getUserDetailsId(id) async {
     try {
-      DocumentSnapshot documentSnapshot = await firestore
-          .collection('USERS_COLLECTION').doc(id).get();
+      DocumentSnapshot documentSnapshot =
+          await firestore.collection('USERS_COLLECTION').doc(id).get();
       return UserModel.fromMap(documentSnapshot.data());
     } catch (e) {
       print(e);
@@ -92,7 +91,8 @@ class AuthMethods {
   Future<List<UserModel>> fetchAllUsers(User currentUser) async {
     List<UserModel> userList = List<UserModel>();
     QuerySnapshot querySnapshot =
-        await firestore.collection(USERS_COLLECTION).get();
+        await firestore.collection('USERS_COLLECTION').get();
+    print(querySnapshot.docs);
     for (var i = 0; i < querySnapshot.docs.length; i++) {
       if (querySnapshot.docs[i].id != currentUser.uid) {
         userList.add(UserModel.fromMap(querySnapshot.docs[i].data()));
@@ -115,10 +115,11 @@ class AuthMethods {
   void setUserState({String userId, UserState userState}) {
     int stateNum = Utils.stateToNum(userState);
     firestore
-        .collection('USERS_COLLECTION').doc(userId).update({"state": stateNum});
+        .collection('USERS_COLLECTION')
+        .doc(userId)
+        .update({"state": stateNum});
   }
 
   Stream<DocumentSnapshot> getUserStream({String uid}) =>
-      firestore
-          .collection('USERS_COLLECTION').doc(uid).snapshots();
+      firestore.collection('USERS_COLLECTION').doc(uid).snapshots();
 }
